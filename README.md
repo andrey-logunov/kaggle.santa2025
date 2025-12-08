@@ -1,1 +1,1 @@
-# kaggle.santa2025
+# Santa 2025 - Christmas Tree Packing Challenge
