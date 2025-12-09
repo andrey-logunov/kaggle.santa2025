@@ -4,8 +4,8 @@ namespace kaggle.santa2025
 {
     internal class Parcel
     {
-        const double MIN_XY = -100.0;
-        const double MAX_XY = 100.0;
+        const decimal MIN_XY = -100.0m;
+        const decimal MAX_XY = 100.0m;
 
         readonly ChristmasTree[] trees;
 
@@ -15,7 +15,7 @@ namespace kaggle.santa2025
             for (int i = 0; i < numTrees; i++)
             {
                 //trees[i] = new ChristmasTree(MIN_XY + i * 0.7 + 1.0, 0.0, 0.0);
-                trees[i] = new ChristmasTree(MIN_XY + i * (0.425 + 0.010) + 1.0, i % 2 == 0 ? 0.0 : 0.25 - 0.002, i % 2 == 0 ? 0.0 : 180.0);
+                trees[i] = new ChristmasTree(MIN_XY + (decimal)i * (0.35m + 0.1m) + 1.0m, i % 2 == 0 ? 0.0m : 0.25m, i % 2 == 0 ? 0.0m : 180.0m);
             }
         }
 

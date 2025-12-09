@@ -4,40 +4,40 @@ namespace kaggle.santa2025
 {
     internal class ChristmasTree
     {
-        public static readonly double[][] ETALON_VERTICES = [
-            [ 0.0, 0.8 ],
+        public static readonly decimal[][] ETALON_VERTICES = [
+            [ 0.0m, 0.8m ],
 
-            [ 0.125, 0.5 ],
-            [ 0.075, 0.5 ],
-            [ 0.25, 0.25 ],
-            [ 0.075, 0.25 ],
-            [ 0.35, 0.0 ],
-            [ 0.075, 0.0 ],
-            [ 0.075, -0.2 ],
+            [ 0.125m, 0.5m ],
+            [ 0.0625m, 0.5m ],
+            [ 0.2m, 0.25m ],
+            [ 0.1m, 0.25m ],
+            [ 0.35m, 0.0m ],
+            [ 0.075m, 0.0m ],
+            [ 0.075m, -0.2m ],
 
-            [ -0.075, -0.2 ],
-            [ -0.075, 0.0 ],
-            [ -0.35, 0.0 ],
-            [ -0.075, 0.25 ],
-            [ -0.25, 0.25 ],
-            [ -0.075, 0.5 ],
-            [ -0.125, 0.5 ],
+            [ -0.075m, -0.2m ],
+            [ -0.075m, 0.0m ],
+            [ -0.35m, 0.0m ],
+            [ -0.1m, 0.25m ],
+            [ -0.2m, 0.25m ],
+            [ -0.0625m, 0.5m ],
+            [ -0.125m, 0.5m ],
         ];
 
-        public readonly double[][] Vertices;
+        public readonly decimal[][] Vertices;
 
-        public double X0 { get; private set; }
-        public double Y0 { get; private set; }
-        public double Deg { get; private set; }
+        public decimal X0 { get; private set; }
+        public decimal Y0 { get; private set; }
+        public decimal Deg { get; private set; }
 
-        public double MinX { get; private set; }
-        public double MaxX { get; private set; }
-        public double MinY { get; private set; }
-        public double MaxY { get; private set; }
+        public decimal MinX { get; private set; }
+        public decimal MaxX { get; private set; }
+        public decimal MinY { get; private set; }
+        public decimal MaxY { get; private set; }
 
-        public ChristmasTree() : this(0.0, 0.0, 0.0) { }
+        public ChristmasTree() : this(0.0m, 0.0m, 0.0m) { }
 
-        public ChristmasTree(double x0, double y0, double deg)
+        public ChristmasTree(decimal x0, decimal y0, decimal deg)
         {
             X0 = x0;
             Y0 = y0;
@@ -48,7 +48,7 @@ namespace kaggle.santa2025
             MinY = Y0;
             MaxY = Y0;
 
-            Vertices = new double[ETALON_VERTICES.Length][];
+            Vertices = new decimal[ETALON_VERTICES.Length][];
             for (int i = 0; i < ETALON_VERTICES.Length; i++)
             {
                 var (newX, newY) = Geometry2D.RotateAroundPoint(X0, Y0, ETALON_VERTICES[i][0] + X0, ETALON_VERTICES[i][1] + Y0, Deg);
