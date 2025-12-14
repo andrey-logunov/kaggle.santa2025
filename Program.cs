@@ -1,5 +1,4 @@
 ﻿using kaggle.santa2025.ChristmasTrees;
-using kaggle.santa2025.Geometry2D;
 using kaggle.santa2025.Packing;
 using System;
 
@@ -11,14 +10,18 @@ namespace kaggle.santa2025
         {
             Console.WriteLine("Started...");
 
-            int N = 3;
+            int N = 5;
 
-            Box box = new (N);
-            ChristmasTree[] layout = box.Pack();
-            double side = Box.Adjust(layout);
-            string svg = Box.ExportSvg(side, layout);
-            Console.WriteLine($"Side: {side:F4}");
+            Placement placementInit = new Placement();
+            PackingShop.GenerateInitial(N).ForEach(t => placementInit.Trees.Add(ChristmasTreeFactory.Create(t.pos, t.template)));
+            string svgInit = placementInit.ExportSvg();
+            System.IO.File.WriteAllText($@"c:\temp\santa2025_{DateTime.Now:yyyyMMdd_HHmmss}_{N}.svg", svgInit);
+
+
+            Placement placement = PackingShop.FindBestPacking(N, 50);
+            string svg = placement.ExportSvg();
             System.IO.File.WriteAllText($@"c:\temp\santa2025_{DateTime.Now:yyyyMMdd_HHmmss}_{N}.svg", svg);
+
             Console.WriteLine("Done...");
         }
     }
