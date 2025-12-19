@@ -1,7 +1,6 @@
 ﻿using kaggle.santa2025.ChristmasTrees;
 using kaggle.santa2025.Geometry2D;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -9,12 +8,12 @@ namespace kaggle.santa2025.Packing
 {
     public class Placement
     {
-        public List<ChristmasTree> Trees = [];
+        public ChristmasTree[] Trees = null;
         public double SideLength => ComputeSideLength();
 
         private double ComputeSideLength()
         {
-            if (Trees.Count == 0) return 0;
+            if (Trees.Length == 0) return 0;
 
             double minX = double.MaxValue, minY = double.MaxValue;
             double maxX = double.MinValue, maxY = double.MinValue;
@@ -34,18 +33,18 @@ namespace kaggle.santa2025.Packing
 
         public Placement Clone()
         {
-            var clone = new Placement();
-            clone.Trees.AddRange(Trees.Select(t =>
-                ChristmasTreeFactory.Create(t.Translation, t.TemplateIndex)));
-            return clone;
+            return new Placement
+            {
+                Trees = [.. Trees.Select(t => ChristmasTreeFactory.Create(t.Translation, t.TemplateIndex))]
+            };
         }
 
         public Placement Clone(Vector2D delta)
         {
-            var clone = new Placement();
-            clone.Trees.AddRange(Trees.Select(t =>
-                ChristmasTreeFactory.Create(t.Translation + delta, t.TemplateIndex)));
-            return clone;
+            return new Placement
+            {
+                Trees = [.. Trees.Select(t => ChristmasTreeFactory.Create(t.Translation + delta, t.TemplateIndex))]
+            };
         }
 
         public Placement CloneAdjusted(out double side)
@@ -66,6 +65,11 @@ namespace kaggle.santa2025.Packing
             return Clone(new Vector2D(-minX, -minY));
         }
 
+        public double GetScore()
+        {
+            return Santa2025Metric.Metric.GetScore(Trees);
+        }
+
         public string ExportSvg()
         {
             Placement layout = this.CloneAdjusted(out double side);
@@ -82,6 +86,17 @@ namespace kaggle.santa2025.Packing
             }
             sb.AppendLine("</svg>");
             return sb.ToString();
+        }
+
+        public StringBuilder ExportPlacementSolution(StringBuilder sb)
+        {
+            int n = Trees.Length;
+            for (int i = 0; i < n; i++)
+            {
+                (Vector2D root, _) = ChristmasTreeFactory.GetRootAndAngle(Trees[i]);
+                sb.AppendLine($"{n:D3}_{i},s{root.X:0.0#},s{root.Y:0.0#},s{Trees[i].TemplateIndex:0.0#}");
+            }
+            return sb;
         }
     }
 }

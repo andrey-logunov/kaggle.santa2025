@@ -1,50 +1,70 @@
-﻿using kaggle.santa2025.Geometry2D;
+﻿using kaggle.santa2025.ChristmasTrees;
+using kaggle.santa2025.CollisionDetection2D;
+using kaggle.santa2025.Geometry2D;
 using System;
-using System.Collections.Generic;
 
 namespace kaggle.santa2025.Packing
 {
     public static class PackingShop
     {
-        public static List<(Vector2D pos, int template)> GenerateInitial(int numTrees, double spread = 10.0)
+        const int NUM_OF_ATTEMPTS = 50;
+        static readonly TimeSpan TIME_LIMIT = TimeSpan.FromSeconds(10);
+
+        static readonly Random random = new(2025);
+
+        public static Placement Generate(int numTrees, double spread)
         {
-            var list = new List<(Vector2D, int)>();
-            Random random = new (2025);
+            spread = spread * Math.Sqrt(numTrees);
 
-            for (int i = 0; i < numTrees; i++)
+            for (int attempt = 0; attempt < NUM_OF_ATTEMPTS; attempt++)
             {
-                double x = (random.NextDouble() - 0.5) * spread;
-                double y = (random.NextDouble() - 0.5) * spread + i * 0.5; // Stagger vertically
-                int rotation = random.Next(0, 360); // Or prefer base-down: 270 + rng.Next(-30,30)
+                DateTime startTime = DateTime.Now;
+                bool timeout = false;
 
-                // Better: prefer base down (root pointing down)
-                int baseDownIndex = 270; // Adjust based on your BASE_ROOT direction
-                int rotationIndex = (baseDownIndex + random.Next(-45, 46)) % 360;
-
-                list.Add((new Vector2D(x, y), rotationIndex));
-            }
-            return list;
-        }
-
-        public static Placement FindBestPacking(int numTrees, int numAttempts = 50)
-        {
-            Placement best = null;
-            double bestSide = double.MaxValue;
-
-            for (int attempt = 0; attempt < numAttempts; attempt++)
-            {
-                var initial = GenerateInitial(numTrees, spread: 15.0 + attempt * 2);
-                var placement = GravityPacker.Pack(initial);
-
-                if (placement.SideLength < bestSide - 1e-4)
+                ChristmasTree[] trees = new ChristmasTree[numTrees];
+                for (int i = 0; i < numTrees; i++)
                 {
-                    bestSide = placement.SideLength;
-                    best = placement;
-                    Console.WriteLine($"New best: {bestSide:F3} (attempt {attempt + 1})");
+                    int T = 0;
+                    while (true)
+                    {
+                        ChristmasTree newTree = ChristmasTreeFactory.Create(new Vector2D(random.NextDouble() * spread, random.NextDouble() * spread), random.Next(0, 360));
+                        T++;
+                        bool hasCollision = false;
+                        for (int j = 0; j < i; j++)
+                        {
+                            CollisionResult collision = ChristmasTreeFactory.DetectCollision(newTree, trees[j]);
+                            if (collision.IsColliding)
+                            {
+                                hasCollision = true;
+                                break;
+                            }
+                        }
+                        if (!hasCollision)
+                        {
+                            trees[i] = newTree;
+                            startTime = DateTime.Now;
+                            break;
+                        }
+                        if (DateTime.Now - startTime > TIME_LIMIT)
+                        {
+                            timeout = true;
+                            Console.WriteLine($"Attempt {attempt + 1}: Timeout {T} reached after placing {i} trees.");
+                            break;
+                        }
+                    }
+                    if (timeout) break;
                 }
+                if (timeout) continue;
+
+                Console.WriteLine("Initial placement generated.");
+
+                return new Placement
+                {
+                    Trees = trees
+                };
             }
 
-            return best;
+            return null;
         }
     }
 }

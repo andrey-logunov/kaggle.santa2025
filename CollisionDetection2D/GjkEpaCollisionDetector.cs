@@ -139,7 +139,7 @@ namespace kaggle.santa2025.CollisionDetection2D
         /// Returns true if the shapes collide, and outputs the final simplex (triangle or degenerate) for EPA.
         /// This version fixes the simplex management bug by using a fixed array and proper do-while logic.
         /// </summary>
-        private static bool GilbertJohnsonKeerthiAlgorithm(
+        public static bool GilbertJohnsonKeerthiAlgorithm(
             IReadOnlyList<Vector2D> verticesA,
             IReadOnlyList<Vector2D> verticesB,
             out List<MinkowskiVertex> finalSimplex)
@@ -448,34 +448,31 @@ namespace kaggle.santa2025.CollisionDetection2D
             IReadOnlyCollection<IReadOnlyList<Vector2D>> compoundShapeA,
             IReadOnlyCollection<IReadOnlyList<Vector2D>> compoundShapeB)
         {
-            //if (compoundShapeA == null || compoundShapeB == null)
-            //    throw new ArgumentNullException("Compound shapes cannot be null.");
-
+            if (compoundShapeA == null || compoundShapeB == null)
+                throw new ArgumentNullException();
             if (compoundShapeA.Count == 0 || compoundShapeB.Count == 0)
                 return new CollisionResult { IsColliding = false };
 
-            CollisionResult deepestResult = new() { IsColliding = false, PenetrationDepth = 0 };
+            CollisionResult bestResult = default;
+            bool foundCollision = false;
 
-            // Test every convex part of A against every convex part of B
             foreach (var convexA in compoundShapeA)
             {
                 foreach (var convexB in compoundShapeB)
                 {
-                    CollisionResult pairResult = DetectCollision(convexA, convexB);
-
-                    if (pairResult.IsColliding)
+                    CollisionResult result = DetectCollision(convexA, convexB);
+                    if (result.IsColliding)
                     {
-                        // Keep the result with the greatest penetration depth
-                        if (pairResult.PenetrationDepth > deepestResult.PenetrationDepth + Epsilon)
+                        if (!foundCollision || result.PenetrationDepth > bestResult.PenetrationDepth + Epsilon)
                         {
-                            deepestResult = pairResult;
+                            bestResult = result;
                         }
+                        foundCollision = true;
                     }
                 }
             }
 
-            deepestResult.IsColliding = deepestResult.PenetrationDepth > Epsilon;
-            return deepestResult;
+            return foundCollision ? bestResult : new CollisionResult { IsColliding = false };
         }
 
         public static CollisionResult DetectCollision(Polygon2D convexA, Polygon2D convexB) =>

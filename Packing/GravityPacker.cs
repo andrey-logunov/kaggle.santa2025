@@ -2,7 +2,6 @@
 using kaggle.santa2025.Geometry2D;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace kaggle.santa2025.Packing
 {
@@ -14,22 +13,16 @@ namespace kaggle.santa2025.Packing
         private const int MaxIterations = 20000;
         private const int JitterEvery = 300;            // Add random shake periodically
 
-        public static Placement Pack(IEnumerable<(Vector2D initialPos, int templateIndex)> initialTrees)
+        static readonly Random random = new(2025);
+
+        public static Placement Pack(Placement initial)
         {
-            var placement = new Placement();
-
-            // Create initial trees
-            foreach (var (pos, idx) in initialTrees)
-            {
-                placement.Trees.Add(ChristmasTreeFactory.Create(pos, idx));
-            }
-
-            Random rng = new Random(42);
+            var placement = initial.Clone();
 
             for (int iter = 0; iter < MaxIterations; iter++)
             {
                 bool moved = false;
-                int n = placement.Trees.Count;
+                int n = placement.Trees.Length;
 
                 // Phase 1: Apply gravity and resolve collisions
                 for (int i = 0; i < n; i++)
@@ -82,36 +75,36 @@ namespace kaggle.santa2025.Packing
                 // Phase 2: Occasional jitter
                 if (iter % JitterEvery == 0 && iter > 0)
                 {
-                    ApplyJitter(placement.Trees, JitterStrength, rng);
+                    //ApplyJitter(placement.Trees, JitterStrength);
                 }
 
                 // Optional: stronger jitter if completely stuck
                 if (iter > 5000 && !moved && iter % 500 == 0)
                 {
-                    ApplyJitter(placement.Trees, JitterStrength * 4, rng);
+                    //ApplyJitter(placement.Trees, JitterStrength * 4);
                 }
             }
 
             return placement;
         }
 
-        private static void ApplyJitter(List<ChristmasTree> trees, double strength, Random rng)
+        private static void ApplyJitter(List<ChristmasTree> trees, double strength)
         {
             int n = trees.Count;
             for (int i = 0; i < n; i++)
             {
                 ChristmasTree tree = trees[i];
 
-                double dx = (rng.NextDouble() - 0.5) * strength * 2;
-                double dy = (rng.NextDouble() - 0.5) * strength * 2;
+                double dx = (random.NextDouble() - 0.5) * strength * 2;
+                double dy = (random.NextDouble() - 0.5) * strength * 2;
                 Vector2D newPos = tree.Translation + new Vector2D(dx, dy);
 
                 int newRotation = tree.TemplateIndex;
 
                 // Occasionally change rotation
-                if (rng.NextDouble() < 0.2) // 20% chance per jitter
+                if (random.NextDouble() < 0.2) // 20% chance per jitter
                 {
-                    int delta = rng.Next(-15, 16); // ±15 degrees
+                    int delta = random.Next(-15, 16); // ±15 degrees
                     newRotation = (tree.TemplateIndex + delta + 360) % 360;
                 }
 
